@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STATA Studio · Tu espacio de análisis</title>
+    <meta
+      name="description"
+      content="Explora datos, ejecuta análisis estadísticos y conserva tus comandos en un espacio de trabajo local."
+    />
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/"
+        ><span class="brand-icon">∑</span
+        ><span>STATA<span class="brand-light">studio</span></span></a
+      >
+      <div class="workspace-label">ESPACIO DE TRABAJO</div>
+      <nav aria-label="Navegación principal">
+        <button class="nav-item active" data-view="data">
+          <span>▦</span> Explorador de datos
+        </button>
+        <button class="nav-item" data-view="results">
+          <span>◷</span> Resultados
+          <span id="result-count" class="count">0</span>
+        </button>
+        <button class="nav-item" data-view="history">
+          <span>↶</span> Historial
+        </button>
+        <button class="nav-item" data-view="help">
+          <span>⌘</span> Guía de comandos
+        </button>
+      </nav>
+      <div class="sidebar-section">
+        <div class="section-label">TU CONJUNTO DE DATOS</div>
+        <div class="dataset-card">
+          <span class="file-icon">▤</span>
+          <div>
+            <strong id="dataset-short">Sin archivo</strong
+            ><small id="dataset-size">Importa datos para comenzar</small>
+          </div>
+          <span class="green-dot"></span>
+        </div>
+      </div>
+      <div class="sidebar-section variable-section">
+        <div class="section-label">VARIABLES <span id="var-count">0</span></div>
+        <input
+          id="variable-search"
+          class="variable-search"
+          placeholder="Buscar variable…"
+          aria-label="Buscar variable"
+        />
+        <div id="variable-list"></div>
+      </div>
+      <div class="sidebar-bottom">
+        <span class="local-dot"></span>
+        <div>
+          <strong>Todo en tu equipo</strong
+          ><small>Tus datos se procesan localmente</small>
+        </div>
+      </div>
+    </aside>
+    <main>
+      <header>
+        <div class="breadcrumb">
+          Espacio de trabajo <span>/</span>
+          <strong id="breadcrumb-view">Explorador de datos</strong>
+        </div>
+        <div class="header-actions">
+          <button id="open-project" class="quiet">Abrir proyecto</button
+          ><button id="save-project" class="button small">
+            ↓ Guardar proyecto
+          </button>
+        </div>
+      </header>
+      <div class="main-content">
+        <section class="page-heading">
+          <div>
+            <div class="eyebrow">OBSERVA. EXPLORA. COMPRENDE.</div>
+            <h1 id="page-title">Tus datos, con perspectiva.</h1>
+            <p id="page-subtitle">
+              Del primer vistazo a la próxima conclusión, en un mismo lugar.
+            </p>
+          </div>
+          <button id="import-open" class="button primary">
+            ＋ Importar datos
+          </button>
+        </section>
+        <section
+          id="summary-strip"
+          class="summary-strip"
+          aria-label="Resumen del conjunto de datos"
+        >
+          <div>
+            <span class="stat-icon">≡</span>
+            <p><small>Observaciones</small><strong id="rows-stat">—</strong></p>
+          </div>
+          <div>
+            <span class="stat-icon">▥</span>
+            <p><small>Variables</small><strong id="cols-stat">—</strong></p>
+          </div>
+          <div>
+            <span class="stat-icon">◌</span>
+            <p>
+              <small>Valores ausentes</small
+              ><strong id="missing-stat">—</strong>
+            </p>
+          </div>
+          <div>
+            <span class="stat-icon">↗</span>
+            <p>
+              <small>Análisis ejecutados</small
+              ><strong id="analysis-stat">0</strong>
+            </p>
+          </div>
+        </section>
+        <section id="data-view" class="view">
+          <div id="empty-state" class="empty-state">
+            <div class="empty-symbol">▦</div>
+            <span class="eyebrow">CADA ANÁLISIS EMPIEZA CON UNA PREGUNTA</span>
+            <h2>Da el primer paso con tus datos.</h2>
+            <p>
+              Importa un libro de Excel o un archivo CSV.<br />También puedes
+              explorar un conjunto de ejemplo.
+            </p>
+            <div>
+              <button id="empty-import" class="button primary">
+                Importar un archivo</button
+              ><button id="demo" class="button">Explorar ejemplo →</button>
+            </div>
+            <small
+              >XLSX, CSV y TSV · Hasta 20 MB · Sin subir datos a la nube</small
+            >
+          </div>
+          <div id="data-workspace" hidden>
+            <section class="data-panel">
+              <div class="panel-toolbar">
+                <div class="panel-name">
+                  <span class="file-icon">▤</span
+                  ><strong id="dataset-name"></strong
+                  ><span class="badge">DATOS</span>
+                </div>
+                <div class="table-actions">
+                  <input
+                    id="table-search"
+                    placeholder="Buscar en los datos…"
+                    aria-label="Buscar en los datos"
+                  /><button
+                    id="undo"
+                    class="button small"
+                    title="Deshacer el último cambio"
+                  >
+                    ↶ Deshacer</button
+                  ><select id="export-kind" aria-label="Exportar datos">
+                    <option value="">Exportar ↓</option>
+                    <option value="xlsx">Excel (.xlsx)</option>
+                    <option value="csv">CSV (.csv)</option>
+                  </select>
+                </div>
+              </div>
+              <div id="data-table" class="table-scroll"></div>
+              <div class="table-footer">
+                <span id="table-info"></span
+                ><span class="edit-hint"
+                  >Doble clic en una celda para editar</span
+                >
+                <div>
+                  <button
+                    id="prev-page"
+                    class="page-button"
+                    aria-label="Página anterior"
+                  >
+                    ←</button
+                  ><span id="page-info"></span
+                  ><button
+                    id="next-page"
+                    class="page-button"
+                    aria-label="Página siguiente"
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+            </section>
+            <div class="analysis-heading">
+              <div>
+                <h2>¿Qué quieres descubrir?</h2>
+                <p>Elige un análisis. Nosotros preparamos el comando.</p>
+              </div>
+              <span class="badge muted">ANÁLISIS GUIADO</span>
+            </div>
+            <div class="analysis-cards">
+              <button data-analysis="summarize">
+                <span class="card-icon">μ</span><strong>Describir</strong
+                ><small>Conoce el centro y la dispersión</small
+                ><span class="card-arrow">↗</span></button
+              ><button data-analysis="correlate">
+                <span class="card-icon">⤢</span><strong>Relacionar</strong
+                ><small>Explora cómo cambian juntas</small
+                ><span class="card-arrow">↗</span></button
+              ><button data-analysis="regress">
+                <span class="card-icon">ƒ</span><strong>Modelar</strong
+                ><small>Estima una regresión lineal</small
+                ><span class="card-arrow">↗</span></button
+              ><button data-analysis="histogram">
+                <span class="card-icon">▥</span><strong>Visualizar</strong
+                ><small>Encuentra patrones en un gráfico</small
+                ><span class="card-arrow">↗</span>
+              </button>
+            </div>
+          </div>
+        </section>
+        <section id="results-view" class="view" hidden>
+          <div class="view-toolbar">
+            <p>Resultados de esta sesión, del más reciente al más antiguo.</p>
+            <button id="analysis-open" class="button primary">
+              ＋ Nuevo análisis
+            </button>
+          </div>
+          <div id="results-list"></div>
+        </section>
+        <section id="history-view" class="view" hidden>
+          <div class="view-toolbar">
+            <p>Una trazabilidad clara de cada paso de tu análisis.</p>
+            <a class="button" href="/api/export/do" download
+              >↓ Exportar comandos .do</a
+            >
+          </div>
+          <div id="history-list"></div>
+        </section>
+        <section id="help-view" class="view" hidden>
+          <div class="notice">
+            <strong
+              >Familiar si ya usas Stata. Accesible si estás empezando.</strong
+            >
+            <p>
+              Este proyecto independiente implementa un subconjunto de comandos;
+              no ejecuta todo el lenguaje de Stata. Los menús y la consola
+              utilizan el mismo motor.
+            </p>
+          </div>
+          <div id="help-content"></div>
+        </section>
+      </div>
+      <section class="console" aria-label="Consola de comandos">
+        <div class="console-top">
+          <span
+            ><span class="terminal-icon">›_</span> Consola
+            <span class="console-label">TU ANÁLISIS, A TU MANERA</span></span
+          ><button id="console-help" class="quiet">Ver comandos ↗</button>
+        </div>
+        <form id="command-form">
+          <span class="prompt">›</span
+          ><input
+            id="command"
+            autocomplete="off"
+            spellcheck="false"
+            list="command-suggestions"
+            aria-label="Comando estadístico"
+            placeholder="Escribe un comando, por ejemplo: summarize salario educacion"
+          /><datalist id="command-suggestions">
+            <option value="describe"></option>
+            <option value="summarize"></option>
+            <option
+              value="regress salario educacion experiencia, robust"
+            ></option>
+            <option value="histogram salario"></option>
+            <option value="help"></option></datalist
+          ><button id="execute" class="button primary" type="submit">
+            Ejecutar <span>↵</span>
+          </button>
+        </form>
+        <div class="console-bottom">
+          <span id="console-status" role="status">Lista para analizar</span
+          ><span
+            >↑ ↓ historial <span class="divider">·</span> Enter para
+            ejecutar</span
+          >
+        </div>
+      </section>
+    </main>
+    <div id="toast" role="alert" hidden></div>
+    <dialog id="import-dialog">
+      <form method="dialog" class="dialog-top">
+        <span class="eyebrow">INCORPORAR DATOS</span
+        ><button class="close" aria-label="Cerrar">×</button>
+      </form>
+      <h2>Un nuevo punto de partida.</h2>
+      <p>
+        Selecciona un archivo de tu equipo. Sustituirá los datos actuales;
+        puedes deshacer la importación.
+      </p>
+      <label class="drop-zone" id="drop-zone"
+        ><span>↑</span><strong>Elige un archivo o arrástralo aquí</strong
+        ><small>XLSX, CSV o TSV · Máximo 20 MB</small
+        ><input type="file" id="import-file" accept=".xlsx,.csv,.tsv"
+      /></label>
+      <div id="import-options" hidden>
+        <p id="selected-file"></p>
+        <label id="sheet-label"
+          >Hoja de Excel<select id="sheet-select"></select
+        ></label>
+        <div id="csv-options">
+          <label
+            >Separador<select id="delimiter">
+              <option value=",">Coma (,)</option>
+              <option value=";">Punto y coma (;)</option>
+              <option value="tab">Tabulación</option>
+            </select></label
+          ><label
+            >Separador decimal<select id="decimal">
+              <option value=".">Punto (.)</option>
+              <option value=",">Coma (,)</option>
+            </select></label
+          >
+        </div>
+      </div>
+      <p id="import-error" class="error-text" role="alert"></p>
+      <div class="dialog-footer">
+        <button id="import-submit" class="button primary" disabled>
+          Importar datos →
+        </button>
+      </div>
+    </dialog>
+    <dialog id="analysis-dialog">
+      <form method="dialog" class="dialog-top">
+        <span class="eyebrow">ANÁLISIS GUIADO</span
+        ><button class="close" aria-label="Cerrar">×</button>
+      </form>
+      <h2>De la pregunta al resultado.</h2>
+      <label
+        >Tipo de análisis<select id="analysis-type">
+          <option value="summarize">Estadísticos descriptivos</option>
+          <option value="correlate">Correlación de Pearson</option>
+          <option value="regress">Regresión lineal</option>
+          <option value="ttest">Comparar dos grupos (Welch)</option>
+          <option value="tabulate">Tabla de frecuencias</option>
+          <option value="histogram">Histograma</option>
+          <option value="scatter">Dispersión</option>
+        </select></label
+      >
+      <div id="analysis-fields"></div>
+      <label
+        >Condición opcional<input
+          id="analysis-condition"
+          placeholder="Por ejemplo: edad >= 30"
+      /></label>
+      <div class="command-preview">
+        <span>COMANDO QUE SE EJECUTARÁ</span><code id="analysis-preview"></code>
+      </div>
+      <p id="analysis-error" class="error-text" role="alert"></p>
+      <div class="dialog-footer">
+        <button id="analysis-run" class="button primary">
+          Ejecutar análisis →
+        </button>
+      </div>
+    </dialog>
+    <dialog id="edit-dialog">
+      <form id="edit-form">
+        <div class="dialog-top">
+          <span class="eyebrow">EDITAR CELDA</span
+          ><button
+            type="button"
+            id="edit-close"
+            class="close"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+        </div>
+        <h2 id="edit-title"></h2>
+        <label>Valor (vacío = ausente)<input id="edit-value" /></label>
+        <p id="edit-error" class="error-text" role="alert"></p>
+        <div class="dialog-footer">
+          <button class="button primary">Guardar cambio</button>
+        </div>
+      </form>
+    </dialog>
+    <input id="project-file" type="file" accept=".json" hidden />
+  </body>
+</html>
